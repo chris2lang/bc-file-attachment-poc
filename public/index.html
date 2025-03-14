@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PDF Upload and PATCH Request</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 20px;
+        line-height: 1.6;
+      }
+      h1 {
+        color: #333;
+        margin-bottom: 20px;
+      }
+      .form-group {
+        margin-bottom: 15px;
+      }
+      label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+      }
+      input[type="text"],
+      input[type="file"] {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+      }
+      button {
+        background-color: #4caf50;
+        color: white;
+        padding: 10px 15px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+      }
+      button:hover {
+        background-color: #45a049;
+      }
+      .response {
+        margin-top: 20px;
+        padding: 15px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        background-color: #f9f9f9;
+        display: none;
+      }
+      .error {
+        color: red;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>PDF Upload and PATCH Request</h1>
+
+    <form id="pdfUploadForm" enctype="multipart/form-data">
+      <div class="form-group">
+        <label for="pdfFile">Select PDF File:</label>
+        <input
+          type="file"
+          id="pdfFile"
+          name="pdfFile"
+          accept="application/pdf"
+          required
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="accessToken">Access Token:</label>
+        <input
+          type="text"
+          id="accessToken"
+          name="accessToken"
+          placeholder="e.g. eyJ0eXAiOiJKV1Qi..."
+          required
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="baseUrl">Base URL:</label>
+        <input
+          type="text"
+          id="baseUrl"
+          name="baseUrl"
+          placeholder="e.g. https://api.example.com"
+          required
+        />
+      </div>
+
+      <!-- <div class="form-group">
+        <label for="parentId">Parent ID:</label>
+        <input
+          type="text"
+          id="parentId"
+          name="parentId"
+          placeholder="e.g. 12345"
+          required
+        />
+      </div> -->
+
+      <div class="form-group">
+        <label for="attachmentId">Attachment ID:</label>
+        <input
+          type="text"
+          id="attachmentId"
+          name="attachmentId"
+          placeholder="e.g. 12345"
+          required
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="eTag">ETag:</label>
+        <input
+          type="text"
+          id="eTag"
+          name="eTag"
+          placeholder='e.g. W/"12345678"'
+        />
+      </div>
+
+      <button type="submit">Upload and Send</button>
+    </form>
+
+    <div id="response" class="response">
+      <h3>Response:</h3>
+      <pre id="responseContent"></pre>
+    </div>
+
+    <script>
+      document
+        .getElementById("pdfUploadForm")
+        .addEventListener("submit", async function (e) {
+          e.preventDefault();
+
+          const formData = new FormData();
+
+          const pdfFile = document.getElementById("pdfFile").files[0];
+          const accessToken = document.getElementById("accessToken").value;
+          const baseUrl = document.getElementById("baseUrl").value;
+        //   const parentId = document.getElementById("parentId").value;
+          const attachmentId = document.getElementById("attachmentId").value;
+          const eTag = document.getElementById("eTag").value;
+
+          formData.append("pdfFile", pdfFile);
+          formData.append("accessToken", accessToken);
+          formData.append("baseUrl", baseUrl);
+        //   formData.append("parentId", parentId);
+          formData.append("attachmentId", attachmentId);
+          formData.append("eTag", eTag);
+
+          const responseDiv = document.getElementById("response");
+          const responseContent = document.getElementById("responseContent");
+
+          try {
+            const response = await fetch("/upload-pdf", {
+              method: "POST",
+              body: formData,
+            });
+
+            const result = await response.json();
+
+            responseDiv.style.display = "block";
+            if (response.ok) {
+              responseContent.className = "";
+              responseContent.textContent = JSON.stringify(result, null, 2);
+            } else {
+              responseContent.className = "error";
+              responseContent.textContent = JSON.stringify(result, null, 2);
+            }
+          } catch (error) {
+            responseDiv.style.display = "block";
+            responseContent.className = "error";
+            responseContent.textContent = "Error: " + error.message;
+          }
+        });
+    </script>
+  </body>
+</html>
